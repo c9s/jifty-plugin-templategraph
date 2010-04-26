@@ -3,7 +3,7 @@ use inc::Module::Install;
 name        'Jifty-Plugin-TemplateGraph';
 version     '0.01';
 requires    
-    'Jifty' => '1.00105',
+    'Jifty' => 0,
     'GraphViz' => 0
 ;
 
