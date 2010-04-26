@@ -32,7 +32,7 @@ put this config to your etc/config.yml
 
 =head1 AUTHORS
 
-Cornelius <cornelius.howlE<@>gmail.com>
+Cornelius <cornelius.howl _AT_ gmail.com>
 Sartak   # special thanks !
 
 =cut
