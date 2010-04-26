@@ -1,6 +1,6 @@
 use inc::Module::Install;
 
-name        'TD';
+name        'Jifty-Plugin-TemplateGraph';
 version     '0.01';
 requires    
     'Jifty' => '1.00105',
