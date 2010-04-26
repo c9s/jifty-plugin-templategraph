@@ -25,6 +25,11 @@ put this config to your etc/config.yml
         graphviz: { }
         output: template.png
 
+=head1 AUTHORS
+
+Cornelius <cornelius.howlE<@>gmail.com>
+Sartak   # special thanks !
+
 =cut
 
 my $config;
@@ -76,7 +81,7 @@ sub init {
         Jifty->log->info( 'TemplateGraph: start fetching ...' );
         require LWP::UserAgent;
         my $ua = LWP::UserAgent->new;
-        $ua->timeout(10);
+        $ua->timeout(100);
         $ua->env_proxy;
         for my $path ( @{ $config->{entry_pages} } ) {
             my $url = Jifty->web->url() . $path;

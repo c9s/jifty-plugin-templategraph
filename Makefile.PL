@@ -8,3 +8,4 @@ requires
 ;
 
 WriteAll;
+&auto_install;
