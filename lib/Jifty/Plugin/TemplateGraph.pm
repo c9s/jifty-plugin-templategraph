@@ -121,6 +121,8 @@ END {
     open my $handle, '>', $output;
     binmode($handle);
     print $handle $graph->as_png;
+    close $handle;
+    system( qq|open -a Preview $output| ) if ( $^O eq 'darwin' );
 }
 
 
