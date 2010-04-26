@@ -70,6 +70,7 @@ sub init {
 
         # wait for server
         # XXX: wait for server ready signal.
+        Jifty->log->info( 'TemplateGraph: waiting for server.' );
         sleep 5;
 
         Jifty->log->info( 'TemplateGraph: start fetching ...' );
