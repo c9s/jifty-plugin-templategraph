@@ -2,26 +2,78 @@ package Jifty::Plugin::TemplateGraph;
 use warnings;
 use strict;
 use base qw/Jifty::Plugin/;
+use AnyEvent;
 use GraphViz;
 use strict;
 use warnings;
+
+
+my $config;
+
 our $graph = GraphViz->new;
 our $CURRENT_TEMPLATE = '';
 
 sub init {
     my $self = shift;
+    my %config = @_;
     return if $self->_pre_init;
-#     return unless Jifty->config->framework('DevelMode')
-#                && !Jifty->config->framework('HideHalos');
+    $config = \%config;
 
     warn "Overwriting an existing Template::Declare->around_template"
         if Template::Declare->around_template;
 
-    Template::Declare->around_template( sub { 
-            $self->around_template(@_)
-        } );
-}
+    Template::Declare->around_template( sub { $self->around_template(@_) });
 
+    $self->{done} = AnyEvent->condvar;
+    my $pid = fork; # or exit 5;
+    if( $pid ) {
+        # parent
+        my $ppid = $$;
+        $self->{cb} = AnyEvent->child (
+                pid => $pid,
+                cb  => sub {
+                    my ($pid, $status) = @_;
+                    warn "pid $pid exited with status $status";
+                    $self->{done}->send;
+
+                    # XXX: should stop current server if child process exited.
+                },
+            );
+
+        # XXX: put in jifty server ready trigger ?
+        # $self->{done}->recv;
+    }
+    else {
+        # child
+        Jifty->log->debug('TemplateGraph: child pid: ' . $$ );
+
+
+        # wait for server
+        # XXX: wait for server ready signal.
+        sleep 5;
+
+        Jifty->log->info( 'TemplateGraph: start fetching ...' );
+        require LWP::UserAgent;
+        my $ua = LWP::UserAgent->new;
+        $ua->timeout(10);
+        $ua->env_proxy;
+        for my $path ( @{ $config->{entry_pages} } ) {
+            my $url = Jifty->web->url() . $path;
+            my $response = $ua->get( $url );
+            if ($response->is_success) {
+                Jifty->log->info( "TemplateGraph: $url fetched." );
+            }
+            else {
+                Jifty->log->error( "TemplateGraph: " . $response->status_line );
+            }
+        }
+        Jifty->log->info( "TemplateGraph: Now please hit Ctrl-c to get template call graph."  );
+
+        # kill child process.
+        kill TERM => $$;
+    }
+
+}
 
 sub around_template {
     my $class = shift;
@@ -33,7 +85,8 @@ sub around_template {
 }
 
 END {
-    open my $handle, '>template.png';
+    my $output = $config->{output} || 'template.png';
+    open my $handle, '>', $output;
     binmode($handle);
     print $handle $graph->as_png;
 }
