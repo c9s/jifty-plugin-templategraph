@@ -7,9 +7,14 @@ use GraphViz;
 use strict;
 use warnings;
 
+
 =head1 NAME
 
 Jifty::Plugin::TemplateGraph
+
+=head1 VERSION
+
+0.01
 
 =head1 DESCRIPTIONS
 
