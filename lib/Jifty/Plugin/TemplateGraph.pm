@@ -7,10 +7,28 @@ use GraphViz;
 use strict;
 use warnings;
 
+=head1 NAME
+
+Jifty::Plugin::TemplateGraph
+
+=head1 DESCRIPTIONS
+
+This plugin generate template call graph by GraphViz.
+
+put this config to your etc/config.yml
+
+  Plugins: 
+    - TemplateGraph:
+        entry_pages: 
+            - index.html
+            - login
+        graphviz: { }
+        output: template.png
+
+=cut
 
 my $config;
-
-our $graph = GraphViz->new;
+our $graph;
 our $CURRENT_TEMPLATE = '';
 
 sub init {
@@ -27,6 +45,8 @@ sub init {
     $self->{done} = AnyEvent->condvar;
     my $pid = fork; # or exit 5;
     if( $pid ) {
+        $graph = GraphViz->new( %{ $config->{graphviz} } );
+
         # parent
         my $ppid = $$;
         $self->{cb} = AnyEvent->child (
@@ -86,6 +106,7 @@ sub around_template {
 
 END {
     my $output = $config->{output} || 'template.png';
+    Jifty->log->info( "Generating template call graph to $output." );
     open my $handle, '>', $output;
     binmode($handle);
     print $handle $graph->as_png;
